@@ -22,8 +22,12 @@ public class User {
     @Transient
     private String passwordConfirm;
     private Date createdAt;
-    private Date lastLoginTime;
-    private Gender gender;
+    private long postCounter = 0;
     @ManyToMany
     private Set<Role> roles;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Date();
+    }
 }

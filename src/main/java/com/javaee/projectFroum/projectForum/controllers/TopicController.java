@@ -1,51 +1,76 @@
 package com.javaee.projectFroum.projectForum.controllers;
 
+import com.javaee.projectFroum.projectForum.dto.PostDto;
+import com.javaee.projectFroum.projectForum.dto.PostMapper;
+import com.javaee.projectFroum.projectForum.dto.TopicDto;
+import com.javaee.projectFroum.projectForum.dto.TopicMapper;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
+import com.javaee.projectFroum.projectForum.models.User;
 import com.javaee.projectFroum.projectForum.services.TopicServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.util.List;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
-@RestController
-@RequestMapping("/api/topic")
+@Controller
+@RequestMapping("/topic")
 public class TopicController {
     @Autowired
     TopicServiceImpl topicService;
 
-    @GetMapping
-    public ResponseEntity<List<Topic>> getAllItems() {
-        return new ResponseEntity<>(topicService.getAllTopics(), HttpStatus.OK);
+    @RequestMapping(method = RequestMethod.GET)
+    public String getAllTopics(ModelMap model) {
+        model.addAttribute("topicsList", topicService.getAllTopics());
+        return "topics";
+    }
+    @RequestMapping(path ="{id}", method = RequestMethod.GET)
+    public String getAllPostsFromTopic(ModelMap model, @PathVariable("id") long id) {
+        model.addAttribute("postsList", topicService.getAllPostsFromTopic(id));
+        return "posts";
     }
 
-    @GetMapping(path = "{id}")
-    public ResponseEntity<Topic> getTopicById(@PathVariable("id") long id){
-        Topic searchedTopic = topicService.getTopicById(id);
-        if(searchedTopic != null)    return new ResponseEntity<>(searchedTopic, HttpStatus.OK);
-        else return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    @GetMapping(path = "add")
+    public String addTopic(Model model) {
+        model.addAttribute("topicForm", new TopicDto());
+        return "newtopic";
     }
-
+    @GetMapping(path = "update/{id}")
+    public String editTopic(Model model, @PathVariable("id") long id) {
+        model.addAttribute("topicForm", topicService.getTopicById(id));
+        return "edittopic";
+    }
+    @PostMapping(path = "update/{id}")
+    public String editTopic(@ModelAttribute("topicForm") Topic topic, @PathVariable("id") long id) throws ParseException {
+        topicService.editTopic(topic, id);
+        return "redirect:/topic";
+    }
     @PostMapping(path = "add")
-    public ResponseEntity<String> addTopic(@RequestBody @Valid Topic topic, BindingResult result) {
-        if (!result.hasErrors()) {
-            topicService.addTopic(topic);
-            return new ResponseEntity<>("Topic added", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Bad input", HttpStatus.BAD_REQUEST);
-        }
+    public String addTopic(@ModelAttribute("topicForm") TopicDto topicDto) throws ParseException {
+        topicService.addTopic(TopicMapper.toTopic(topicDto));
+            return "redirect:/topic";
     }
-    @DeleteMapping(path = "delete/{id}")
-    public ResponseEntity deleteTopic(@PathVariable("id") long id) {
-        if (topicService.deleteTopicById(id)) {
-            return new ResponseEntity(HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping(path = "{id}/add")
+    public String addPostToTopic(Model model) {
+        model.addAttribute("postForm", new PostDto());
+        return "newpost";
+    }
+    @PostMapping(path = "{id}/add")
+    public String addPostToTopic(@ModelAttribute("postForm") PostDto postDto, @PathVariable("id") long id){
+            topicService.addPostToTopic(id, PostMapper.toPost(postDto));
+        return "redirect:/topic/{id}";
+    }
+    @GetMapping(path = "delete/{id}")
+    public String deleteTopic(@PathVariable("id") long id) {
+            topicService.deleteTopicById(id);
+        return "redirect:/topic";
     }
 }
