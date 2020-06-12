@@ -4,6 +4,7 @@ import com.javaee.projectFroum.projectForum.dto.PostDto;
 import com.javaee.projectFroum.projectForum.dto.PostMapper;
 import com.javaee.projectFroum.projectForum.dto.TopicDto;
 import com.javaee.projectFroum.projectForum.dto.TopicMapper;
+import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
 import com.javaee.projectFroum.projectForum.models.User;
@@ -49,7 +50,7 @@ public class TopicController {
         return "edittopic";
     }
     @PostMapping(path = "update/{id}")
-    public String editTopic(@ModelAttribute("topicForm") Topic topic, @PathVariable("id") long id) throws ParseException {
+    public String editTopic(@ModelAttribute("topicForm") Topic topic, @PathVariable("id") long id) throws ParseException, WrongUsernameException {
         topicService.editTopic(topic, id);
         return "redirect:/topic";
     }
@@ -69,7 +70,7 @@ public class TopicController {
         return "redirect:/topic/{id}";
     }
     @GetMapping(path = "delete/{id}")
-    public String deleteTopic(@PathVariable("id") long id) {
+    public String deleteTopic(@PathVariable("id") long id) throws WrongUsernameException {
             topicService.deleteTopicById(id);
         return "redirect:/topic";
     }

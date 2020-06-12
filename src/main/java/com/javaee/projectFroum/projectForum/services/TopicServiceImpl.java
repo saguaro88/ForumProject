@@ -1,11 +1,14 @@
 package com.javaee.projectFroum.projectForum.services;
 
+import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
 import com.javaee.projectFroum.projectForum.repositories.PostRepository;
 import com.javaee.projectFroum.projectForum.repositories.TopicRepository;
 import com.javaee.projectFroum.projectForum.services.interfaces.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,10 +29,14 @@ public class TopicServiceImpl implements TopicService {
         return optionalTopic.orElse(null);
     }
     @Override
-    public Topic editTopic(Topic topic, long id) {
+    public Topic editTopic(Topic topic, long id) throws WrongUsernameException {
         Optional<Topic> optionalTopic = topicRepository.findById(id);
-        optionalTopic.get().setTitle(topic.getTitle());
-        return topicRepository.save(optionalTopic.get());
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userNameToVerfiy = ((UserDetails)principal).getUsername();
+        if(userNameToVerfiy.equals(optionalTopic.get().getUser().getUsername())) {
+            optionalTopic.get().setTitle(topic.getTitle());
+            return topicRepository.save(optionalTopic.get());
+        } throw new WrongUsernameException("Logged user isn't post owner.");
     }
     @Override
     public Set<Post> getAllPostsFromTopic(long id) {
@@ -48,13 +55,16 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
-    public Boolean deleteTopicById(long id) {
+    public Boolean deleteTopicById(long id) throws WrongUsernameException {
         Optional<Topic> optionalTopic = topicRepository.findById(id);
-            if(optionalTopic.isPresent()){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userNameToVerfiy = ((UserDetails)principal).getUsername();
+        if(userNameToVerfiy.equals(optionalTopic.get().getUser().getUsername())) {
+            if (optionalTopic.isPresent()) {
                 topicRepository.deleteById(id);
                 return true;
-            }
-            return false;
+            } return false;
+        } throw new WrongUsernameException("Logged user isn't post owner");
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.javaee.projectFroum.projectForum.dto.PostDto;
 import com.javaee.projectFroum.projectForum.dto.PostMapper;
 import com.javaee.projectFroum.projectForum.dto.TopicDto;
 import com.javaee.projectFroum.projectForum.dto.TopicMapper;
+import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
 import com.javaee.projectFroum.projectForum.services.PostServiceImpl;
@@ -39,19 +40,19 @@ public class PostController {
         return "redirect:/topic";
     }
     @GetMapping(path = "update/{topicId}/{postId}")
-    public String editTopic(Model model, @PathVariable("topicId") long topicId, @PathVariable("postId") long postId) {
+    public String editPost(Model model, @PathVariable("topicId") long topicId, @PathVariable("postId") long postId) {
         model.addAttribute("postForm", postService.getPostById(postId));
         return "editpost";
     }
 
     @PostMapping(path = "update/{topicId}/{postId}")
-    public String editTopic(@ModelAttribute("topicForm") Post post,@PathVariable("topicId") long topicId, @PathVariable("postId") long postId) {
+    public String editPost(@ModelAttribute("topicForm") Post post,@PathVariable("topicId") long topicId, @PathVariable("postId") long postId) throws WrongUsernameException {
         postService.editPost(post, topicId, postId);
-        return "redirect:/topic/{topicid}";
+        return "redirect:/topic/{topicId}";
     }
 
     @GetMapping(path = "delete/{topicId}/{postId}")
-    public String deletePost(@PathVariable("topicId") long topicId, @PathVariable("postId") long postId) {
+    public String deletePost(@PathVariable("topicId") long topicId, @PathVariable("postId") long postId) throws WrongUsernameException {
         postService.deletePostById(postId, topicId);
         return "redirect:/topic/{topicId}";
     }

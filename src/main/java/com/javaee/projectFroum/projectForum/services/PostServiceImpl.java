@@ -1,15 +1,20 @@
 package com.javaee.projectFroum.projectForum.services;
 
+import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
 import com.javaee.projectFroum.projectForum.repositories.PostRepository;
 import com.javaee.projectFroum.projectForum.repositories.TopicRepository;
 import com.javaee.projectFroum.projectForum.services.interfaces.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -36,25 +41,33 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Boolean deletePostById(long postId, long topicId) {
+    public Boolean deletePostById(long postId, long topicId) throws WrongUsernameException{
         Optional<Post> optionalPost = postRepository.findById(postId);
         Optional<Topic> optionalTopic = topicRepository.findById(topicId);
-        if (optionalPost.isPresent()) {
-            if (optionalTopic.isPresent()) {
-                optionalTopic.get().getPosts().remove(optionalPost.get());
-                topicRepository.save(optionalTopic.get());
-                postRepository.deleteById(postId);
-                return true;
-            }
-        }
-        return false;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userNameToVerfiy = ((UserDetails)principal).getUsername();
+        if(userNameToVerfiy.equals(optionalPost.get().getUser().getUsername())) {
+                if (optionalPost.isPresent()) {
+                    if (optionalTopic.isPresent()) {
+                        optionalTopic.get().getPosts().remove(optionalPost.get());
+                        topicRepository.save(optionalTopic.get());
+                        postRepository.deleteById(postId);
+                        return true;
+                    }
+                }
+                return false;
+            } throw new WrongUsernameException("Logged user isn't post owner.");
+
     }
 
     @Override
-    public Post editPost(Post post, long topicId, long postId) {
+    public Post editPost(Post post, long topicId, long postId) throws WrongUsernameException {
         Optional<Post> optionalPost = postRepository.findById(postId);
         Optional<Topic> optionalTopic = topicRepository.findById(topicId);
-        if (optionalPost.isPresent()) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userNameToVerfiy = ((UserDetails)principal).getUsername();
+        if(userNameToVerfiy.equals(optionalPost.get().getUser().getUsername())) {
+         if (optionalPost.isPresent()) {
             if (optionalTopic.isPresent()) {
                 optionalTopic.get().getPosts().stream().
                         filter(p -> p.getId() == optionalPost.get().getId()).findAny()
@@ -66,6 +79,7 @@ public class PostServiceImpl implements PostService {
 
             }
         }
-        return null;
+         return null;
+        } throw new WrongUsernameException("Logged user isn't post owner.");
     }
 }

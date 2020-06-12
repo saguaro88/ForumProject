@@ -1,5 +1,6 @@
 package com.javaee.projectFroum.projectForum.services.interfaces;
 
+import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
 
@@ -10,8 +11,8 @@ public interface TopicService {
     Topic getTopicById(long id);
     List<Topic> getAllTopics();
     Topic addTopic(Topic topic);
-    Boolean deleteTopicById(long id);
+    Boolean deleteTopicById(long id) throws WrongUsernameException;
     Boolean addPostToTopic(long topicId, Post post);
     Set<Post> getAllPostsFromTopic(long id);
-    Topic editTopic(Topic topic, long id);
+    Topic editTopic(Topic topic, long id) throws WrongUsernameException;
 }

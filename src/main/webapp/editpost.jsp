@@ -31,7 +31,7 @@
 
         <div class="col-md-8 col-md-offset-2">
 
-            <h1>Edit topic</h1>
+            <h1>Edit post</h1>
 
             <form:form method="POST" modelAttribute="postForm">
                 <spring:bind path="content">
