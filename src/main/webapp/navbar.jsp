@@ -38,6 +38,13 @@
             <li class="nav-item">
                 <a class="nav-link" href="/topic">Topics</a>
             </li>
+
+            <li class="nav-item">
+                <c:if test="${pageContext.request.isUserInRole('ROLE_ADMIN')}">
+                    <a class="nav-link" href="/report">Reports</a>
+                </c:if>
+
+            </li>
             <c:if test = "${(requestScope['javax.servlet.forward.request_uri']) == '/topic'}">
             <li class="nav-item">
                 <a class="nav-link" href="/topic/add">Create topic</a>

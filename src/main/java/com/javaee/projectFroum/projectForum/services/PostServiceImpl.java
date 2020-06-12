@@ -3,14 +3,17 @@ package com.javaee.projectFroum.projectForum.services;
 import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
+import com.javaee.projectFroum.projectForum.models.User;
 import com.javaee.projectFroum.projectForum.repositories.PostRepository;
 import com.javaee.projectFroum.projectForum.repositories.TopicRepository;
 import com.javaee.projectFroum.projectForum.services.interfaces.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -22,6 +25,9 @@ public class PostServiceImpl implements PostService {
     PostRepository postRepository;
     @Autowired
     TopicRepository topicRepository;
+
+    private boolean isAdmin = false;
+    private boolean isUser = false;
 
     @Override
     public Post getPostById(long id) {
@@ -44,9 +50,8 @@ public class PostServiceImpl implements PostService {
     public Boolean deletePostById(long postId, long topicId) throws WrongUsernameException{
         Optional<Post> optionalPost = postRepository.findById(postId);
         Optional<Topic> optionalTopic = topicRepository.findById(topicId);
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userNameToVerfiy = ((UserDetails)principal).getUsername();
-        if(userNameToVerfiy.equals(optionalPost.get().getUser().getUsername())) {
+        checkIfAdmin();
+        if(checkPostOwner(optionalPost.get().getUser().getUsername()) || isAdmin) {
                 if (optionalPost.isPresent()) {
                     if (optionalTopic.isPresent()) {
                         optionalTopic.get().getPosts().remove(optionalPost.get());
@@ -64,9 +69,8 @@ public class PostServiceImpl implements PostService {
     public Post editPost(Post post, long topicId, long postId) throws WrongUsernameException {
         Optional<Post> optionalPost = postRepository.findById(postId);
         Optional<Topic> optionalTopic = topicRepository.findById(topicId);
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userNameToVerfiy = ((UserDetails)principal).getUsername();
-        if(userNameToVerfiy.equals(optionalPost.get().getUser().getUsername())) {
+        checkIfAdmin();
+        if(checkPostOwner(optionalPost.get().getUser().getUsername()) || isAdmin) {
          if (optionalPost.isPresent()) {
             if (optionalTopic.isPresent()) {
                 optionalTopic.get().getPosts().stream().
@@ -81,5 +85,26 @@ public class PostServiceImpl implements PostService {
         }
          return null;
         } throw new WrongUsernameException("Logged user isn't post owner.");
+    }
+
+    private boolean checkPostOwner(String username){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userNameToVerfiy = ((UserDetails)principal).getUsername();
+            if(userNameToVerfiy.equals(username)) return true;
+            else return false;
+    }
+    private void checkIfAdmin(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Collection<? extends GrantedAuthority> authorities
+                = ((UserDetails)principal).getAuthorities();
+        for (GrantedAuthority grantedAuthority : authorities){
+            if (grantedAuthority.getAuthority().equals("ROLE_USER")) {
+                isUser = true;
+                break;
+            }else if (grantedAuthority.getAuthority().equals("ROLE_ADMIN")) {
+                isAdmin = true;
+                break;
+            }
+        }
     }
 }

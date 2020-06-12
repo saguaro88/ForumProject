@@ -85,8 +85,7 @@
     }
 </style>
 <%@include file="navbar.jsp" %>
-    <div class="container-fluid mt-100">
-        <c:forEach items="${postsList}" var="post">
+<div class="container-fluid mt-100">
         <div class="row">
             <div class="col-md-12">
                 <div class="card mb-4">
@@ -106,7 +105,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                      <p><c:out value="${post.content}"/></p>
+                        <p><c:out value="${post.content}"/></p>
                     </div>
                     <div class="card-footer d-flex flex-wrap justify-content-between align-items-center">
                         <div class="px-4 pt-3">
@@ -115,20 +114,19 @@
                                 topicId = topicId.replaceAll("\\D+","");
                             %>
                             <c:set var="topicid" value="<%=topicId%>" />
-                        <sec:authorize access="hasRole('ROLE_ADMIN')" var="isAdmin">
-                        </sec:authorize>
-                        <c:if test="${(post.user.username eq pageContext.request.userPrincipal.name) or (isAdmin eq true)}">
-                            <a href="/post/update/${topicid}/<c:out value='${post.id}' />" class="btn btn-success" role="button">Update</a>
-                            <a href="/post/delete/${topicid}/<c:out value='${post.id}' />" class="btn btn-danger" role="button">Delete</a>
-                        </c:if>
+                            <sec:authorize access="hasRole('ROLE_ADMIN')" var="isAdmin">
+                            </sec:authorize>
+                            <c:if test="${(post.user.username eq pageContext.request.userPrincipal.name) or (isAdmin eq true)}">
+                                <a href="/post/update/${topicid}/<c:out value='${post.id}' />" class="btn btn-success" role="button">Update</a>
+                                <a href="/post/delete/${topicid}/<c:out value='${post.id}' />" class="btn btn-danger" role="button">Delete</a>
+                            </c:if>
                             <a href="/report/add/${topicid}/<c:out value='${post.id}' />" class="btn btn-warning" role="button">Report</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        </c:forEach>
-    </div>
+</div>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>

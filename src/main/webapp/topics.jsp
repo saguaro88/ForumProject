@@ -34,7 +34,7 @@
             <a href="/topic/update/<c:out value='${topic.id}' />" class="btn btn-success" role="button">Update</a>
             <a href="/topic/delete/<c:out value='${topic.id}' />" class="btn btn-danger" role="button">Delete</a>
         </c:if>
-
+        <a href="/report/add/<c:out value='${topic.id}' />" class="btn btn-warning" role="button">Report</a>
     </div>
 </div>
 </c:forEach>

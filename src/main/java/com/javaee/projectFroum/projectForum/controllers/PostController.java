@@ -34,6 +34,11 @@ public class PostController {
         model.addAttribute("postForm", new PostDto());
         return "newpost";
     }
+    @RequestMapping(path ="{id}", method = RequestMethod.GET)
+    public String getPostById(ModelMap model, @PathVariable("id") long id) {
+        model.addAttribute("post", postService.getPostById(id));
+        return "post";
+    }
     @PostMapping(path = "add")
     public String addPost(@ModelAttribute("postForm") PostDto postDto, BindingResult bindingResult) throws ParseException {
         postService.addPost(PostMapper.toPost(postDto));

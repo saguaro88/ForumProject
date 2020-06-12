@@ -7,10 +7,12 @@ import com.javaee.projectFroum.projectForum.repositories.PostRepository;
 import com.javaee.projectFroum.projectForum.repositories.TopicRepository;
 import com.javaee.projectFroum.projectForum.services.interfaces.TopicService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +25,9 @@ public class TopicServiceImpl implements TopicService {
     @Autowired
     PostRepository postRepository;
 
+    private boolean isAdmin = false;
+    private boolean isUser = false;
+
     @Override
     public Topic getTopicById(long id) {
         Optional<Topic> optionalTopic = topicRepository.findById(id);
@@ -31,9 +36,8 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public Topic editTopic(Topic topic, long id) throws WrongUsernameException {
         Optional<Topic> optionalTopic = topicRepository.findById(id);
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userNameToVerfiy = ((UserDetails)principal).getUsername();
-        if(userNameToVerfiy.equals(optionalTopic.get().getUser().getUsername())) {
+        checkIfAdmin();
+        if(checkPostOwner(optionalTopic.get().getUser().getUsername()) || isAdmin) {
             optionalTopic.get().setTitle(topic.getTitle());
             return topicRepository.save(optionalTopic.get());
         } throw new WrongUsernameException("Logged user isn't post owner.");
@@ -57,14 +61,13 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public Boolean deleteTopicById(long id) throws WrongUsernameException {
         Optional<Topic> optionalTopic = topicRepository.findById(id);
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userNameToVerfiy = ((UserDetails)principal).getUsername();
-        if(userNameToVerfiy.equals(optionalTopic.get().getUser().getUsername())) {
+        checkIfAdmin();
+        if(checkPostOwner(optionalTopic.get().getUser().getUsername()) || isAdmin){
             if (optionalTopic.isPresent()) {
                 topicRepository.deleteById(id);
                 return true;
             } return false;
-        } throw new WrongUsernameException("Logged user isn't post owner");
+        } throw new WrongUsernameException("Logged user isn't topic owner");
     }
 
     @Override
@@ -81,5 +84,25 @@ public class TopicServiceImpl implements TopicService {
                 return true;
             }
             return false;
+    }
+    private boolean checkPostOwner(String username){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userNameToVerfiy = ((UserDetails)principal).getUsername();
+        if(userNameToVerfiy.equals(username)) return true;
+        else return false;
+    }
+    private void checkIfAdmin(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Collection<? extends GrantedAuthority> authorities
+                = ((UserDetails)principal).getAuthorities();
+        for (GrantedAuthority grantedAuthority : authorities){
+            if (grantedAuthority.getAuthority().equals("ROLE_USER")) {
+                isUser = true;
+                break;
+            }else if (grantedAuthority.getAuthority().equals("ROLE_ADMIN")) {
+                isAdmin = true;
+                break;
+            }
+        }
     }
 }
