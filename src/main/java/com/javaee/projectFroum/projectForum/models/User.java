@@ -25,6 +25,8 @@ public class User {
     private long postCounter = 0;
     @ManyToMany
     private Set<Role> roles;
+    @ManyToMany
+    private Set<Topic> followedTopics;
 
     @PrePersist
     protected void onCreate() {

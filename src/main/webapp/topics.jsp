@@ -1,3 +1,8 @@
+<%@ page import="com.javaee.projectFroum.projectForum.models.User" %>
+<%@ page import="com.javaee.projectFroum.projectForum.services.UserServiceImpl" %>
+<%@ page import="com.javaee.projectFroum.projectForum.repositories.UserRepository" %>
+<%@ page import="org.springframework.security.core.context.SecurityContextHolder" %>
+<%@ page import="org.springframework.security.core.userdetails.UserDetails" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri='http://java.sun.com/jsp/jstl/core' prefix='c'%>
@@ -35,7 +40,22 @@
             <a href="/topic/delete/<c:out value='${topic.id}' />" class="btn btn-danger" role="button">Delete</a>
         </c:if>
         <a href="/report/add/<c:out value='${topic.id}' />" class="btn btn-warning" role="button">Report</a>
+        <c:set var="isPresent" scope="session" value="false"/>
+        <c:forEach items="${topicfollowed}" var="followedTopic">
+            <c:if test="${followedTopic.id eq topic.id}">
+                    <c:set var="isPresent" value="true"/>
+            </c:if>
+        </c:forEach>
+        <c:choose>
+                <c:when test="${isPresent eq 'true'}">
+                    <a href="/unfollow/<c:out value='${topic.id}' />" class="btn btn-primary" role="button">Unfollow</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="/follow/<c:out value='${topic.id}' />" class="btn btn-primary" role="button">Follow</a>
+                </c:otherwise>
+            </c:choose>
     </div>
+    <c:set var="isPresent" value="false"/>
 </div>
 </c:forEach>
 </div>

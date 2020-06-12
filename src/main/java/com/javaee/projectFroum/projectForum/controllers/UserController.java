@@ -1,5 +1,6 @@
 package com.javaee.projectFroum.projectForum.controllers;
 
+import com.javaee.projectFroum.projectForum.dto.PostDto;
 import com.javaee.projectFroum.projectForum.models.User;
 import com.javaee.projectFroum.projectForum.security.services.SecurityService;
 import com.javaee.projectFroum.projectForum.services.interfaces.UserService;
@@ -58,4 +59,16 @@ public class UserController {
     public String welcome(Model model) {
         return "welcome";
     }
+
+    @GetMapping(path = "/follow/{id}")
+    public String followTopic(@PathVariable("id") long id) {
+        userService.addTopicToFollowed(id);
+        return "redirect:/topic";
+    }
+    @GetMapping(path = "/unfollow/{id}")
+    public String unfollowTopic(@PathVariable("id") long id) {
+        userService.deleteTopicFromFollowed(id);
+        return "redirect:/topic";
+    }
+
 }

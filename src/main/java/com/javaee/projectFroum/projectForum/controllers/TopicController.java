@@ -9,9 +9,14 @@ import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
 import com.javaee.projectFroum.projectForum.models.User;
 import com.javaee.projectFroum.projectForum.services.TopicServiceImpl;
+import com.javaee.projectFroum.projectForum.services.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -21,16 +26,21 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/topic")
 public class TopicController {
     @Autowired
     TopicServiceImpl topicService;
+    @Autowired
+    UserServiceImpl userService;
 
     @RequestMapping(method = RequestMethod.GET)
     public String getAllTopics(ModelMap model) {
         model.addAttribute("topicsList", topicService.getAllTopics());
+        Set<Topic> followedTopics = userService.getCurrentLoggedUser().getFollowedTopics();
+        model.addAttribute("topicfollowed", followedTopics);
         return "topics";
     }
     @RequestMapping(path ="{id}", method = RequestMethod.GET)
@@ -67,6 +77,8 @@ public class TopicController {
     @PostMapping(path = "{id}/add")
     public String addPostToTopic(@ModelAttribute("postForm") PostDto postDto, @PathVariable("id") long id){
             topicService.addPostToTopic(id, PostMapper.toPost(postDto));
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+
         return "redirect:/topic/{id}";
     }
     @GetMapping(path = "delete/{id}")

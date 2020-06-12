@@ -3,10 +3,13 @@ package com.javaee.projectFroum.projectForum.services;
 import com.javaee.projectFroum.projectForum.exceptions.WrongUsernameException;
 import com.javaee.projectFroum.projectForum.models.Post;
 import com.javaee.projectFroum.projectForum.models.Topic;
+import com.javaee.projectFroum.projectForum.models.User;
 import com.javaee.projectFroum.projectForum.repositories.PostRepository;
 import com.javaee.projectFroum.projectForum.repositories.TopicRepository;
 import com.javaee.projectFroum.projectForum.services.interfaces.TopicService;
+import com.javaee.projectFroum.projectForum.services.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +24,12 @@ import java.util.Set;
 public class TopicServiceImpl implements TopicService {
     @Autowired
     TopicRepository topicRepository;
+
+    @Autowired
+    UserServiceImpl userService;
+
+    @Autowired
+    MailService mailService;
 
     @Autowired
     PostRepository postRepository;
@@ -81,6 +90,20 @@ public class TopicServiceImpl implements TopicService {
                 topic.setPosts(posts);
                 topic.getUser().setPostCounter(topic.getUser().getPostCounter()+1);
                 topicRepository.save(topic);
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                for(User user : userService.getAllUsers()){
+                    for(Topic t : user.getFollowedTopics()){
+                        if(t.getId() == topicId){
+                            mailMessage.setTo(user.getEmail());
+                            mailMessage.setSubject("New post in followed topic.");
+                            mailMessage.setFrom("${spring.mail.username}");
+                            mailMessage.setText("There is a new post in topic you're following. \n" +
+                                    "Topic: " + optionalTopic.get().getTitle()+ "\n" +
+                                    "Post: " + post.getContent());
+                            mailService.sendEmail(mailMessage);
+                        }
+                    }
+                }
                 return true;
             }
             return false;
