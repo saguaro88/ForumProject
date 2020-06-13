@@ -1,6 +1,5 @@
 package com.javaee.projectFroum.projectForum.models;
 
-import com.javaee.projectFroum.projectForum.models.enums.AccountRole;
 import lombok.Getter;
 import lombok.Setter;
 

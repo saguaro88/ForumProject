@@ -6,6 +6,7 @@ import com.javaee.projectFroum.projectForum.models.User;
 import com.javaee.projectFroum.projectForum.repositories.RoleRepository;
 import com.javaee.projectFroum.projectForum.repositories.UserRepository;
 import com.javaee.projectFroum.projectForum.services.interfaces.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
@@ -29,28 +31,31 @@ public class UserServiceImpl implements UserService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
+        log.info("Creating user.");
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         Set<Role> roleSet = new HashSet<>();
         Optional<Role> optionalRole = roleRepository.findById(2L);
         roleSet.add(optionalRole.get());
         user.setRoles(roleSet);
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     @Override
     public User findByUsername(String username) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        return optionalUser.orElse(null);
+        log.info("Finding user by username.");
+        return userRepository.findByUsername(username);
     }
 
     @Override
     public Optional<User> findUserById(long id) {
+        log.info("Finding user by ID.");
         return userRepository.findById(id);
     }
 
     @Override
     public void addTopicToFollowed(long id) {
+        log.info("Adding topic to followed.");
         Topic topic = topicService.getTopicById(id);
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = ((UserDetails)principal).getUsername();
@@ -61,6 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteTopicFromFollowed(long id) {
+        log.info("Deleting topic from followed.");
         Topic topic = topicService.getTopicById(id);
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = ((UserDetails)principal).getUsername();
@@ -71,13 +77,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getCurrentLoggedUser() {
+        log.info("Getting current logged user.");
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = ((UserDetails)principal).getUsername();
-        return userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username);
     }
 
     @Override
     public List<User> getAllUsers() {
+        log.info("Getting all users.");
         return userRepository.findAll();
     }
 }

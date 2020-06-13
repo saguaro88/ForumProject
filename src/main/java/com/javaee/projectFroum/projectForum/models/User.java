@@ -1,6 +1,5 @@
 package com.javaee.projectFroum.projectForum.models;
 
-import com.javaee.projectFroum.projectForum.models.enums.Gender;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +13,7 @@ import java.util.Set;
 @Table(name = "user")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String email;
     private String username;
